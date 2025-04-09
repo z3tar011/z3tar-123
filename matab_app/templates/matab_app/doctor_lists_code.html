@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>matab</title>
+    <link rel="icon" type="image/x-icon" href="https://i.postimg.cc/J0dCfhLH/1111.jpg">
+    <style>
+        /* ← نفس تنسيقات التصميم السابقة */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .header {
+            background: linear-gradient(90deg, #007bff, #0d47a1);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .title {
+            color: white;
+        }
+        .logo {
+            width: 60px;
+            margin-left: 15px;
+            border-radius: 30px;
+        }
+        .container {
+            width: 100%;
+            margin: 2rem;
+            padding: 0 0px;
+        }
+        .clinics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .clinic-card {
+            background: #fff;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s ease;
+        }
+        .clinic-card:hover {
+            box-shadow: 0px 2px 4px 2.5px #0d47a1;
+        }
+        .clinic-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 90px;
+            border: 2px solid #0d47a1;
+        }
+        .clinic-details {
+            padding: 1.5rem;
+        }
+        .clinic-name {
+            color: #1a237e;
+            margin-bottom: 0.5rem;
+        }
+        .bio {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+        }
+        .clinic-address {
+            color: #444;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .book-btn {
+            background: #1a237e;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        .book-btn:hover {
+            background: #0d47a1;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <a href="{% url 'home' %}">
+            <img src="https://i.postimg.cc/J0dCfhLH/1111.jpg" alt="logo" class="logo">
+        </a>
+        <h2 class="title">مطب - با ما، درمان نزدیک‌تر از همیشه</h2>
+    </header>
+
+    <div class="container">
+        <div class="clinics-grid">
+            {# ✅ هنا تم استبدال كود Firebase السابق بكود Django لعرض بيانات العيادات من قاعدة البيانات #}
+            {% for clinic in clinics %}
+                <div class="clinic-card">
+                    <div class="clinic-details">
+                        {% if clinic.image %}
+                            <img src="{{ clinic.image.url }}" class="clinic-image" alt="{{ clinic.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/120" class="clinic-image" alt="بدون تصویر">
+                        {% endif %}
+                        <h2 class="clinic-name">{{ clinic.name }}</h2>
+                        <h4 class="bio">{{ clinic.bio }}</h4>
+                        <h3 class="clinic-address">{{ clinic.address }}</h3>
+                        <button class="book-btn">رزرو</button>
+                    </div>
+                </div>
+            {% empty %}
+                <p>هیچ عیادتی ثبت نشده است.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

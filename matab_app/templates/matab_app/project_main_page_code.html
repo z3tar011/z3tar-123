@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>matab</title>
+    <link rel="icon" type="image/x-icon" href="https://i.postimg.cc/J0dCfhLH/1111.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Almarai&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Almarai', sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: linear-gradient(90deg, #007bff, #0d47a1);
+            border-bottom: 2px solid #ddd;
+        }
+        .title {
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+        .login-btn {
+            padding: 10px 20px;
+            background: #1a237e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .search-container {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #e9ecef;
+        }
+        .search-box {
+            width: 60%;
+            padding: 12px;
+            margin: 10px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+        }
+        .gallery {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .gallery img {
+            width: 75px;
+            height: 75px;
+        }
+        .gallery h3 {
+            margin-top: 10px;
+            color: #000;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            padding: 30px 10%;
+        }
+
+        a.grid-item {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border-radius: 15px;
+            overflow: hidden;
+            text-align: center;
+            padding: 10px;
+            background-color: white;
+            transition: 0.3s;
+        }
+
+        a.grid-item:hover {
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            background-color: #0d47a1;
+            color: white;
+        }
+
+        a.grid-item img {
+            width: 75px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <img src="https://i.postimg.cc/J0dCfhLH/1111.jpg" alt="matab" class="logo">
+    <div class="title">مطب - با ما، درمان نزدیک‌تر از همیشه :)</div>
+    <a href="{% url 'login' %}">
+        <button class="login-btn">ورود</button>
+    </a>
+</div>
+
+<!-- Search -->
+<div class="search-container">
+    <input type="text" class="search-box" placeholder="نام پزشک، تخصص، بیماری، مرکز درمانی...">
+    <button class="login-btn">جستجو</button>
+</div>
+
+<!-- Medical Services -->
+<div class="gallery">
+    <a href="{% url 'imaging' %}">
+        <div>
+            <img src="https://i.postimg.cc/mrX1KJyC/images-1-removebg-preview.png" alt="تصویربرداری">
+            <h3>تصویربرداری</h3>
+        </div>
+    </a>
+    <a href="{% url 'clinic' %}">
+        <div>
+            <img src="https://cdn-icons-png.flaticon.com/512/5717/5717514.png" alt="کلینیک">
+            <h3>کلینیک</h3>
+        </div>
+    </a>
+    <a href="{% url 'laboratory' %}">
+        <div>
+            <img src="https://i.postimg.cc/5yF47ks4/images-removebg-preview.png" alt="آزمایشگاه">
+            <h3>آزمایشگاه</h3>
+        </div>
+    </a>
+</div>
+
+<!-- Specialties -->
+<h2>تخصص‌ها</h2>
+<div class="grid-container">
+    {% for specialty in specialties %}
+        <a href="#" class="grid-item">
+            <img src="{{ specialty.image.url }}" alt="{{ specialty.name }}">
+            <div>{{ specialty.name }}</div>
+        </a>
+    {% empty %}
+        <p style="text-align: center;">تخصصی یافت نشد.</p>
+    {% endfor %}
+</div>
+
+<!-- Cities -->
+<h2>شهرها</h2>
+<div class="grid-container">
+    {% for city in cities %}
+        <a href="#" class="grid-item">
+            <div>{{ city.name }}</div>
+        </a>
+    {% empty %}
+        <p style="text-align: center;">شهری یافت نشد.</p>
+    {% endfor %}
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمایشگاه‌ها - مطب</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: linear-gradient(90deg, #007bff, #0d47a1);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            height: 50px;
+            border-radius: 50%;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .laboratory-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+        .laboratory-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-left: 20px;
+        }
+        .laboratory-info h2 {
+            margin-bottom: 10px;
+            color: #0d47a1;
+        }
+        .laboratory-info p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://i.postimg.cc/J0dCfhLH/1111.jpg" alt="logo" class="logo">
+        <div class="title">مطب - با ما، درمان نزدیک‌تر از همیشه</div>
+    </div>
+
+    <div class="container">
+        {% if laboratories %}
+            {% for lab in laboratories %}
+                <div class="laboratory-card">
+                    {% if lab.image %}
+                        <img src="{{ lab.image.url }}" class="laboratory-image" alt="{{ lab.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/100" class="laboratory-image" alt="بدون تصویر">
+                    {% endif %}
+                    <div class="laboratory-info">
+                        <h2>{{ lab.name }}</h2>
+                        <p><strong>بیو:</strong> {{ lab.bio }}</p>
+                        <p><strong>آدرس:</strong> {{ lab.address }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>هیچ آزمایشگاهی ثبت نشده است.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
