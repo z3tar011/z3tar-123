@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -65,14 +66,12 @@
             margin-top: 10px;
             color: #000;
         }
-
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: 15px;
             padding: 30px 10%;
         }
-
         a.grid-item {
             display: block;
             text-decoration: none;
@@ -84,13 +83,11 @@
             background-color: white;
             transition: 0.3s;
         }
-
         a.grid-item:hover {
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
             background-color: #0d47a1;
             color: white;
         }
-
         a.grid-item img {
             width: 75px;
             height: 75px;
@@ -98,31 +95,67 @@
             border-radius: 50%;
             margin-bottom: 10px;
         }
-
         h2 {
             padding: 20px;
             text-align: center;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            border: 1px solid #ddd;
+            min-width: 160px;
+            z-index: 1000;
+        }
+        .dropdown-menu a {
+            color: black;
+            padding: 10px;
+            display: block;
+            text-decoration: none;
+        }
+        .dropdown-menu a:hover {
+            background-color: #f4f4f4;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
         }
     </style>
 </head>
 <body>
 
-<!-- Header -->
+<!-- ✅ رأس الصفحة -->
 <div class="header">
     <img src="https://i.postimg.cc/J0dCfhLH/1111.jpg" alt="matab" class="logo">
     <div class="title">مطب - با ما، درمان نزدیک‌تر از همیشه :)</div>
-    <a href="{% url 'login' %}">
-        <button class="login-btn">ورود</button>
-    </a>
+
+    {% if request.user.is_authenticated %}
+        <div class="dropdown">
+            <button class="login-btn">{{ request.user.username }}</button>
+            <div class="dropdown-menu">
+                <a href="{% url 'profile' %}">مشاهدة حساب کاربری</a>
+                <a href="{% url 'logout' %}">خروج</a>
+            </div>
+        </div>
+    {% else %}
+        <a href="{% url 'login' %}">
+            <button class="login-btn">ورود</button>
+        </a>
+    {% endif %}
 </div>
 
-<!-- Search -->
+<!-- ✅ البحث -->
 <div class="search-container">
     <input type="text" class="search-box" placeholder="نام پزشک، تخصص، بیماری، مرکز درمانی...">
     <button class="login-btn">جستجو</button>
 </div>
 
-<!-- Medical Services -->
+<!-- ✅ خدمات -->
 <div class="gallery">
     <a href="{% url 'imaging' %}">
         <div>
@@ -144,7 +177,7 @@
     </a>
 </div>
 
-<!-- Specialties -->
+<!-- ✅ التخصصات -->
 <h2>تخصص‌ها</h2>
 <div class="grid-container">
     {% for specialty in specialties %}
@@ -157,7 +190,7 @@
     {% endfor %}
 </div>
 
-<!-- Cities -->
+<!-- ✅ المدن -->
 <h2>شهرها</h2>
 <div class="grid-container">
     {% for city in cities %}
@@ -169,6 +202,23 @@
     {% endfor %}
 </div>
 
+<!-- ✅ عرض الأطباء -->
+<h2>پزشکان</h2>
+<div class="grid-container">
+    {% for doctor in doctors %}
+        <a href="{% url 'doctor_detail' doctor.id %}" class="grid-item">
+            {% if doctor.image %}
+                <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}">
+            {% else %}
+                <img src="https://via.placeholder.com/75" alt="بدون تصویر">
+            {% endif %}
+            <div>{{ doctor.name }}</div>
+            <small style="color: #777;">{{ doctor.specialty }}</small>
+        </a>
+    {% empty %}
+        <p style="text-align: center;">پزشکی ثبت نشده است.</p>
+    {% endfor %}
+</div>
 
 </body>
 </html>

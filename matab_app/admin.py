@@ -8,3 +8,6 @@ admin.site.register(Imaging)       # ← تسجيل نموذج مراكز الأ
 admin.site.register(Laboratory)    # ← تسجيل نموذج المختبر الجديد | ثبت مدل آزمایشگاه
 admin.site.register(Specialty)     # ← تسجيل نموذج التخصص | ثبت مدل تخصص
 admin.site.register(City)          # ← تسجيل نموذج المدينة | ثبت مدل شهر
+from .models import AppointmentSlot
+
+admin.site.register(AppointmentSlot)  # ← تسجيل المواعيد في لوحة التحكم

@@ -1,25 +1,41 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .models import Doctor, Clinic, Laboratory, Imaging
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from .models import Doctor, Clinic, Laboratory, Imaging, Specialty, City, AppointmentSlot, PatientProfile
+from .forms import PatientProfileForm
+import os
+import numpy as np
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import img_to_array
+from PIL import Image
+from sklearn.preprocessing import LabelEncoder
 
 # ✅ الصفحة الرئيسية | صفحه اصلی
 def home(request):
-    return render(request, 'matab_app/project_main_page_code.html')
+    specialties = Specialty.objects.all()
+    cities = City.objects.all()
+    doctors = Doctor.objects.all()
+    return render(request, 'matab_app/project_main_page_code.html', {
+        'specialties': specialties,
+        'cities': cities,
+        'doctors': doctors
+    })
 
 # ✅ تسجيل الدخول | ورود کاربر
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email')  # ← استخراج الإيميل | دریافت ایمیل
-        password = request.POST.get('password')  # ← استخراج كلمة المرور | دریافت رمز عبور
-        user = authenticate(request, username=email, password=password)  # ← التحقق من صحة البيانات | احراز هویت کاربر
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        user = authenticate(request, username=email, password=password)
         if user:
-            login(request, user)  # ← تسجيل الدخول | ورود به سیستم
-            messages.success(request, 'ورود با موفقیت انجام شد.')  # ← رسالة نجاح | پیام موفقیت
+            login(request, user)
+            messages.success(request, 'ورود با موفقیت انجام شد.')
             return redirect('home')
         else:
-            messages.error(request, 'ایمیل یا رمز عبور نادرست است.')  # ← رسالة خطأ | پیام خطا
+            messages.error(request, 'ایمیل یا رمز عبور نادرست است.')
     return render(request, 'matab_app/sign_in_page_code.html')
 
 # ✅ إنشاء حساب جديد | ایجاد حساب کاربری جدید
@@ -29,22 +45,22 @@ def register_view(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         if password != confirm_password:
-            messages.error(request, 'رمز عبور و تکرار آن یکسان نیستند.')  # ← كلمة السر غير متطابقة | رمزها مطابقت ندارند
+            messages.error(request, 'رمز عبور و تکرار آن یکسان نیستند.')
         elif User.objects.filter(username=email).exists():
-            messages.error(request, 'این ایمیل قبلاً ثبت شده است.')  # ← الإيميل مستخدم مسبقًا | ایمیل قبلاً استفاده شده است
+            messages.error(request, 'این ایمیل قبلاً ثبت شده است.')
         else:
-            User.objects.create_user(username=email, email=email, password=password)  # ← إنشاء المستخدم | ایجاد کاربر
-            messages.success(request, 'ثبت‌نام با موفقیت انجام شد!')  # ← رسالة نجاح | پیام موفقیت
+            User.objects.create_user(username=email, email=email, password=password)
+            messages.success(request, 'ثبت‌نام با موفقیت انجام شد!')
             return redirect('login')
     return render(request, 'matab_app/sign_up_page_code.html')
 
 # ✅ تسجيل الخروج | خروج از حساب کاربری
 def logout_view(request):
     logout(request)
-    messages.success(request, 'شما با موفقیت خارج شدید.')  # ← رسالة تأكيد الخروج | پیام خروج موفقیت‌آمیز
+    messages.success(request, 'شما با موفقیت خارج شدید.')
     return redirect('login')
 
-# ✅ عرض العيادات من قاعدة البيانات | نمایش کلینیک‌ها از پایگاه داده
+# ✅ عرض العيادات | نمایش کلینیک‌ها
 def clinic_view(request):
     clinics = Clinic.objects.all()
     return render(request, 'matab_app/clinic.html', {'clinics': clinics})
@@ -54,38 +70,51 @@ def doctor_lists_view(request):
     doctors = Doctor.objects.all()
     return render(request, 'matab_app/doctor_lists_code.html', {'doctors': doctors})
 
-# ✅ عرض مراكز الأشعة من قاعدة البيانات | نمایش مراکز تصویربرداری
+# ✅ عرض مراكز الأشعة | نمایش مراکز تصویربرداری
 def imaging_view(request):
     imagings = Imaging.objects.all()
     return render(request, 'matab_app/imaging.html', {'imagings': imagings})
 
-# ✅ عرض المختبرات من قاعدة البيانات | نمایش آزمایشگاه‌ها
+# ✅ عرض المختبرات | نمایش آزمایشگاه‌ها
 def laboratory_view(request):
     laboratories = Laboratory.objects.all()
     return render(request, 'matab_app/laboratory.html', {'laboratories': laboratories})
 
-# ✅ صفحة التفاصيل (غير مفعّلة حالياً) | صفحه جزئیات (فعلاً غیرفعال است)
-def details_view(request):
-    return render(request, 'matab_app/details.html')
+# ✅ عرض تفاصيل طبيب معين | صفحه جزئیات یک پزشک
+def doctor_detail_view(request, doctor_id):
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    appointments = AppointmentSlot.objects.filter(doctor=doctor, is_booked=False).order_by('day', 'start_time')
+    return render(request, 'matab_app/details.html', {
+        'doctor': doctor,
+        'appointments': appointments
+    })
 
-# ✅ عرض صفحة الذكاء الاصطناعي وتشغيل النموذج | نمایش صفحه هوش مصنوعی و اجرای مدل
-import os
-import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import img_to_array
-from PIL import Image
-from sklearn.preprocessing import LabelEncoder
-from django.conf import settings
+# ✅ حجز موعد | رزرو نوبت
+@login_required
+def book_appointment_view(request):
+    if request.method == 'POST':
+        slot_id = request.POST.get('slot_id')
+        slot = get_object_or_404(AppointmentSlot, id=slot_id)
+        already_booked = AppointmentSlot.objects.filter(user=request.user, is_booked=True).exists()
+        if already_booked:
+            messages.error(request, "شما قبلاً یک نوبت رزرو کرده‌اید.")
+        elif slot.is_booked:
+            messages.error(request, "این زمان قبلاً رزرو شده است.")
+        else:
+            slot.is_booked = True
+            slot.user = request.user
+            slot.save()
+            messages.success(request, "رزرو با موفقیت انجام شد.")
+        return redirect('doctor_detail', doctor_id=slot.doctor.id)
+    return redirect('home')
 
-# تحميل النموذج المدرب من الملف | بارگذاری مدل آموزش‌دیده از فایل
+# ✅ تحميل نموذج الذكاء الاصطناعي | بارگذاری مدل هوش مصنوعی
 model = load_model(os.path.join(settings.BASE_DIR, 'matab_app/skin_ai/skin_disease_model.h5'))
 
-# التصنيفات التي تم تدريب النموذج عليها | برچسب‌هایی که مدل روی آن آموزش دیده
 labels = ['akiec', 'bcc', 'bkl', 'df', 'mel', 'nv', 'vasc']
 label_encoder = LabelEncoder()
 label_encoder.fit(labels)
 
-# شرح نتائج التشخيص بالفارسية | توضیح نتایج پیش‌بینی به زبان فارسی
 diagnosis_info = {
     'nv': 'خال عادی پوستی و بدون خطر',
     'mel': 'ملانوما، سرطان خطرناک پوست، نیاز به بررسی فوری پزشکی دارد.',
@@ -96,35 +125,41 @@ diagnosis_info = {
     'df': 'فیبروم پوستی، غیرسرطانی و بی‌خطر.'
 }
 
-# ✅ الدالة المسؤولة عن رفع الصورة وتشخيصها باستخدام النموذج | تابعی برای بارگذاری تصویر و تشخیص آن با استفاده از مدل
+# ✅ تشخيص الأمراض الجلدية | تشخیص بیماری‌های پوستی
 def skin_diagnosis_view(request):
     prediction = None
     confidence = None
-
     if request.method == 'POST' and request.FILES.get('image'):
         image_file = request.FILES['image']
-        image = Image.open(image_file).resize((64, 64)).convert("RGB")  # ← تحويل إلى RGB | تبدیل به RGB
+        image = Image.open(image_file).resize((64, 64)).convert("RGB")
         img_array = img_to_array(image)
         img_array = np.expand_dims(img_array, axis=0)
-
         result = model.predict(img_array)
         predicted_index = np.argmax(result)
         predicted_label = label_encoder.inverse_transform([predicted_index])[0]
-        prediction = diagnosis_info.get(predicted_label, 'تشخیص نامشخص')  # ← إذا لم توجد النتيجة | اگر نتیجه یافت نشد
+        prediction = diagnosis_info.get(predicted_label, 'تشخیص نامشخص')
         confidence = round(np.max(result) * 100, 2)
-
     return render(request, 'matab_app/skin_diagnosis.html', {
         'prediction': prediction,
         'confidence': confidence
     })
 
-# ✅ الصفحة الرئيسية بعد ربط التخصصات والمدن من قاعدة البيانات | صفحه اصلی با اتصال تخصص‌ها و شهرها از پایگاه داده
-from .models import Specialty, City
+# ✅ صفحة البروفايل للمريض | صفحه پروفایل کاربر
+@login_required
+def profile_view(request):
+    profile, created = PatientProfile.objects.get_or_create(user=request.user)
+    appointments = AppointmentSlot.objects.filter(user=request.user, is_booked=True)
 
-def home(request):
-    specialties = Specialty.objects.all()
-    cities = City.objects.all()
-    return render(request, 'matab_app/project_main_page_code.html', {
-        'specialties': specialties,
-        'cities': cities
+    if request.method == 'POST':
+        form = PatientProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'پروفایل با موفقیت به‌روزرسانی شد.')
+            return redirect('profile')
+    else:
+        form = PatientProfileForm(instance=profile)
+
+    return render(request, 'matab_app/profile.html', {
+        'form': form,
+        'appointments': appointments
     })
