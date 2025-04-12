@@ -107,9 +107,12 @@ class PatientProfile(models.Model):
     phone = models.CharField(max_length=20, blank=True)          # رقم الهاتف
     address = models.TextField(blank=True)                       # العنوان
     notes = models.TextField(blank=True)                         # ملاحظات شخصية
+    national_id_code = models.CharField(max_length=10, blank=True)   # کد ملی
+    insurance_number = models.CharField(max_length=20, blank=True)   # شماره بیمه
 
     def __str__(self):
         return self.user.username
+
 
 
 # ✅ الملفات الطبية المرفوعة من المريض | فایل‌های پزشکی بارگذاری‌شده

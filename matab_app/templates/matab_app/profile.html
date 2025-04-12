@@ -91,7 +91,6 @@
     <h3>سلام، {{ request.user.username }}</h3>
     <div class="links">
         <a href="{% url 'logout' %}">خروج</a>
-        <!-- لا نعرض زر "مشاهدة حساب کاربری" لأننا في صفحة البروفايل -->
     </div>
 </div>
 
@@ -109,7 +108,25 @@
     <h2>اطلاعات شخصی</h2>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <label>نام کامل:</label>
+        {{ form.full_name }}
+
+        <label>شماره تلفن:</label>
+        {{ form.phone }}
+
+        <label>آدرس:</label>
+        {{ form.address }}
+
+        <label>یادداشت‌ها:</label>
+        {{ form.notes }}
+
+        <label>کد ملی:</label>
+        {{ form.national_id_code }}
+
+        <label>شماره بیمه:</label>
+        {{ form.insurance_number }}
+
         <button type="submit">ذخیره تغییرات</button>
     </form>
 
